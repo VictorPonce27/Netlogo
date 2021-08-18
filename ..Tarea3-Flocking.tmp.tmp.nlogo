@@ -67,7 +67,7 @@ to find-nearest-neighbor ;; turtle procedure
 end
 
 to find-nearest-tree
-  let close-trees trees in-cone 6 120
+  let close-trees trees in-cone  100
   ifelse any? close-trees
   [ set nearest-tree min-one-of close-trees [distance myself] ]
   [ set nearest-tree nobody ]
@@ -309,7 +309,7 @@ max-circle-turn
 max-circle-turn
 5
 60
-45.0
+60.0
 1
 1
 degrees
@@ -324,7 +324,7 @@ tree-population
 tree-population
 0
 8
-5.0
+2.0
 1
 1
 NIL
