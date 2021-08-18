@@ -1,23 +1,43 @@
-turtles-own [
+breed [birds bird]
+breed [trees tree]
+
+birds-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
+  nearest-tree
+  speed              ;; the speed of the bird
 ]
 
 to setup
   clear-all
-  create-turtles population
+  create-birds population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
       set flockmates no-turtles ]
+  setup-terrain
+  setup-trees
+  set-default-shape trees "circle"
   reset-ticks
 end
 
+to setup-terrain
+  ask patches [ set pcolor blue + 1 ]
+end
+
+to setup-trees
+  create-trees tree-population
+  [ set color brown
+    set size 4 + random-float 1
+    setxy random-xcor random-ycor
+  ]
+end
+
 to go
-  ask turtles [ flock ]
+  ask birds [ flock ]
   ;; the following line is used to make the turtles
   ;; animate more smoothly.
-  repeat 5 [ ask turtles [ fd 0.2 ] display ]
+  repeat 5 [ ask birds [ fd speed ] display ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
@@ -26,20 +46,42 @@ end
 
 to flock  ;; turtle procedure
   find-flockmates
-  if any? flockmates
+  ifelse any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
         [ align
-          cohere ] ]
+          cohere ] set speed 12]
+  [set speed 1]
+  find-nearest-tree
+  if nearest-tree != nobody [ circle ]
 end
 
 to find-flockmates  ;; turtle procedure
-  set flockmates other turtles in-cone  vision FOV
+  set flockmates other birds in-cone vision FOV
 end
 
 to find-nearest-neighbor ;; turtle procedure
   set nearest-neighbor min-one-of flockmates [distance myself]
+end
+
+to find-nearest-tree
+  let close-trees trees in-cone 4 100
+  ifelse any? close-trees
+  [ set nearest-tree min-one-of close-trees [distance myself] ]
+  [ set nearest-tree nobody ]
+end
+
+to circle
+  let max-turn max-circle-turn
+  if distance nearest-tree < 4 [ set max-turn 90 ]
+  turn-towards dodge-tree-heading max-turn
+end
+
+to-report dodge-tree-heading
+  ifelse random 2 = 0
+  [ report towards nearest-tree - 90 ]
+  [ report towards nearest-tree + 90 ]
 end
 
 ;;; SEPARATE
@@ -176,17 +218,17 @@ population
 population
 1.0
 1000.0
-302.0
+201.0
 1.0
 1
 NIL
 HORIZONTAL
 
 SLIDER
-13
-255
-246
-288
+5
+256
+238
+289
 max-align-turn
 max-align-turn
 0.0
@@ -198,25 +240,25 @@ degrees
 HORIZONTAL
 
 SLIDER
-8
-298
-241
-331
+5
+290
+238
+323
 max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-3.0
+14.75
 0.25
 1
 degrees
 HORIZONTAL
 
 SLIDER
-13
-344
-246
-377
+5
+324
+238
+357
 max-separate-turn
 max-separate-turn
 0.0
@@ -258,15 +300,45 @@ patches
 HORIZONTAL
 
 SLIDER
-41
-206
-213
-239
+6
+359
+238
+392
+max-circle-turn
+max-circle-turn
+5
+60
+45.0
+1
+1
+degrees
+HORIZONTAL
+
+SLIDER
+9
+16
+231
+49
+tree-population
+tree-population
+0
+8
+2.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+38
+210
+210
+243
 FOV
 FOV
 135
 300
-300.0
+135.0
 1
 1
 NIL
